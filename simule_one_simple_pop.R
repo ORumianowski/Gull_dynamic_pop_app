@@ -10,7 +10,9 @@ simulate_1_pop <- function(parametre) {
 
   r = parametre[1]
   K = parametre[2]
+  N0 = parametre[3]
   
+  # what is tau_p
   tau_p = 0.1
   
   # INITIALISATION
@@ -18,7 +20,7 @@ simulate_1_pop <- function(parametre) {
   Nm <- array(0, dim = c(temps))
   
   # conditions initiales 
-  Nm[1] = 10 # N0
+  Nm[1] = N0
   N[1] = rlnorm(1, log(Nm[1]), tau_p)
   
   # boucle du temps
@@ -34,7 +36,7 @@ simulate_1_pop <- function(parametre) {
 }
 
 
-simulate_n_pop = function(parametre = c(1.2, 100), nb_of_pop=5){
+simulate_n_pop = function(parametre = c(1.2, 100, 0), nb_of_pop=5){
   df_simulations = data.frame()
   for (i in 1:nb_of_pop) {
     data_pop = simulate_1_pop(parametre)
@@ -46,18 +48,20 @@ simulate_n_pop = function(parametre = c(1.2, 100), nb_of_pop=5){
 
 
 
-plot_isolated_pop = function(parametre = c(1.2, 100), nb_of_pop=5){
+plot_isolated_pop = function(parametre = c(1.2, 100,10), nb_of_pop=5){
   df_simu = simulate_n_pop(parametre, nb_of_pop)
+  K = parametre[2]
   
   plot = ggplot(data = df_simu, aes(x = time, y = N, color=simu_nb)) +
     geom_line(linewidth = 0.8, alpha = 0.8) +
-    labs(title = "Population dynamic for 5 isolated populations",
+    labs(title = paste("Population dynamic for", nb_of_pop ,"isolated populations"),
          x = "Time",
          y = "Population size",
          color = "Population") +
     theme_hc() +
     theme(axis.title = element_text()) +
-    scale_color_brewer(palette = "Set1")
+    scale_color_brewer(palette = "Set1") +
+    ylim(0, 1.3*K)
   return(plot)
 }
 
