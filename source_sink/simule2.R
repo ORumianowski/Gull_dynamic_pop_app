@@ -35,18 +35,26 @@ simulate_n_metapop <- function( parametre = array(c( c(-0.2, 2.1), c(1000, 800),
     
     for (i in 1:nb_pop){
       
-      Nm[t + 1,i] = max(N[t,i] + r[i] * N[t,i] * (1 - N[t,i] / K[i]) , 0.001 * K[i]) # reproduction
-      em[t,i] =  max( (Nm[t + 1,i] -  K[i])  , 0)  
+      # REPRODUCTION
+      Nm[t + 1,i] = N[t,i] + r[i] * N[t,i] * (1 - N[t,i] / K[i])  # reproduction
+      Nm[t + 1,i] = max(Nm[t + 1,i]  , 0.001 * K[i]) # security line
+      
+      # EMIGRATION
+      em[t,i] =  max( (Nm[t + 1,i] -  K[i])  , 0)  # calcul du nombre d'emigrant
       Nm[t + 1,i] = Nm[t + 1,i]  -  em[t,i]   # emigration
-      Nm[t + 1,i] = max(Nm[t + 1,i] , 0.001 * K[i]) 
-      N[t + 1,i] = rlnorm(1, log(Nm[t + 1,i]), sigma_p) # stochasticity
+      
+      # STOCHASTICITY
+      N[t + 1,i] = rlnorm(1, log(Nm[t + 1,i]), sigma_p) 
       
       
     }
     
     for (i in 1:nb_pop){
+      
+      # IMMIGRATION
       immi = (1/(nb_pop-1))* (sum(em[t,1:nb_pop]) - em[t,i]) #chaque pop se partage équitablement les emigrants
       N[t + 1,i] = N[t + 1,i]  + immi #immigration
+      
     }
   }
   
