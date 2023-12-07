@@ -3,19 +3,20 @@
 library(tidyverse)
 library(ggthemes)
 
-simulate_1_pop <- function() {
+simulate_n_metapop <- function( parametre = array(c( c(-0.2, 2.1), c(1000, 800), c(30, 25)), dim = c(2, 3)) ) { # faudra rendre de nouveau les parametres changeable mais quand ce sera pour n pop
+  
   
   # CONDITIONS DE SIMULATION
   temps = 30 # nb de pas de temps (en années)
   
-  r = c(-0.2, 2.1)
-  K = c(1000, 800)
-  N0 = c(30, 25)
+  nb_pop = nrow(parametre)
   
-  nb_pop = length(r)
+  r = parametre[1:nb_pop, 1] 
+  K = parametre[1:nb_pop, 2] 
+  N0 = parametre[1:nb_pop, 3] 
   
-  # what is tau_p
-  tau_p = 0.1
+  # Introducing some stochasticity in the dynamic
+  sigma_p = 0.1 # the variability associated with the reproduction process
   
   # INITIALISATION
   N <- array(0, dim = c(temps, nb_pop))
@@ -26,7 +27,7 @@ simulate_1_pop <- function() {
   for (i in 1:nb_pop){
     # conditions initiales 
     Nm[1,i] = N0[i]
-    N[1,i] = rlnorm(1, log(Nm[1]), tau_p)
+    N[1,i] = rlnorm(1, log(Nm[1]), sigma_p)
   }
   
   # boucle du temps           
@@ -38,13 +39,13 @@ simulate_1_pop <- function() {
       em[t,i] =  max( (Nm[t + 1,i] -  K[i])  , 0)  
       Nm[t + 1,i] = Nm[t + 1,i]  -  em[t,i]   # emigration
       Nm[t + 1,i] = max(Nm[t + 1,i] , 0.001 * K[i]) 
-      N[t + 1,i] = rlnorm(1, log(Nm[t + 1,i]), tau_p) # stochasticity
+      N[t + 1,i] = rlnorm(1, log(Nm[t + 1,i]), sigma_p) # stochasticity
       
       
     }
     
     for (i in 1:nb_pop){
-      immi = sum(em[t,1:nb_pop]) - em[t,i]
+      immi = (1/(nb_pop-1))* (sum(em[t,1:nb_pop]) - em[t,i]) #chaque pop se partage équitablement les emigrants
       N[t + 1,i] = N[t + 1,i]  + immi #immigration
     }
   }
@@ -63,7 +64,7 @@ simulate_1_pop <- function() {
   return(res)
 }
 
-sim = simulate_1_pop()
+sim = simulate_n_metapop()
 
 sim$Effectif$N[,1] #effectif pop 1
 
@@ -82,3 +83,7 @@ ggplot() +
     geom_line(data = data2, aes(x = time, y = pop),linewidth = 0.8, alpha = 0.8) +
     geom_line(data = data3, aes(x = time, y = pop),linewidth = 0.8, alpha = 0.8, color = "red")
 
+
+# essai pour quatre pop
+
+simulate_n_metapop( parametre = array(c( c(-0.2, 2.1, 1.2, -0.8), c(1000, 800, 250, 300), c(30, 25, 15, 20)), dim = c(4, 3)) )
