@@ -39,12 +39,12 @@ simulate_n_metapop <- function( parametre = array(c( c(-0.2, 2.1), c(1000, 800),
       Nm[t + 1,i] = N[t,i] + r[i] * N[t,i] * (1 - N[t,i] / K[i])  # reproduction
       Nm[t + 1,i] = max(Nm[t + 1,i]  , 0.001 * K[i]) # security line
       
+      # STOCHASTICITY
+      N[t + 1,i] = rlnorm(1, log(Nm[t + 1,i]), sigma_p) 
+      
       # EMIGRATION
       em[t,i] =  max( (Nm[t + 1,i] -  K[i])  , 0)  # calcul du nombre d'emigrant
       Nm[t + 1,i] = Nm[t + 1,i]  -  em[t,i]   # emigration
-      
-      # STOCHASTICITY
-      N[t + 1,i] = rlnorm(1, log(Nm[t + 1,i]), sigma_p) 
       
       
     }
