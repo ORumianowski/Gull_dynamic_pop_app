@@ -3,11 +3,14 @@
 library(tidyverse)
 library(ggthemes)
 
-simulate_n_metapop <- function( parametre = array(c( c(-0.2, 2.1), c(1000, 800), c(30, 25)), dim = c(2, 3)) ) { # faudra rendre de nouveau les parametres changeable mais quand ce sera pour n pop
-  
+
+
+simulate_n_metapop <- function(parametre = array(c(c(-0.2, 2.1), c(1000, 800), c(30, 25)), dim = c(2, 3))) 
+  { 
+  # faudra rendre de nouveau les parametres changeable mais quand ce sera pour n pop
   
   # CONDITIONS DE SIMULATION
-  temps = 30 # nb de pas de temps (en années)
+  temps = 30 # nb de pas de temps (en annees)
   
   nb_pop = nrow(parametre)
   
@@ -45,14 +48,12 @@ simulate_n_metapop <- function( parametre = array(c( c(-0.2, 2.1), c(1000, 800),
       # EMIGRATION
       em[t,i] =  max( (Nm[t + 1,i] -  K[i])  , 0)  # calcul du nombre d'emigrant
       Nm[t + 1,i] = Nm[t + 1,i]  -  em[t,i]   # emigration
-      
-      
     }
     
     for (i in 1:nb_pop){
       
       # IMMIGRATION
-      immi = (1/(nb_pop-1))* (sum(em[t,1:nb_pop]) - em[t,i]) #chaque pop se partage équitablement les emigrants
+      immi = (1/(nb_pop-1))* (sum(em[t,1:nb_pop]) - em[t,i]) #chaque pop se partage equitablement les emigrants
       N[t + 1,i] = N[t + 1,i]  + immi #immigration
       
     }
@@ -77,21 +78,17 @@ sim = simulate_n_metapop()
 sim$Effectif$N[,1] #effectif pop 1
 
 
-data1 = tibble(time = 1:30,
-               pop = sim$Effectif$N[,1])
+data = tibble(time = 1:30,
+               pop1 = sim$Effectif$N[,1],
+               pop2 = sim$Effectif$N[,2],
+               emigration = sim$emigration$em[,2]) %>% 
+  pivot_longer(-time, values_to = "effectif", names_to = "pop")
 
-data2 = tibble(time = 1:30,
-               pop = sim$Effectif$N[,2])
 
-data3 = tibble(time = 1:30,
-               pop = sim$emigration$em[,2])
-
-ggplot() +
-    geom_line(data = data1, aes(x = time, y = pop),linewidth = 0.8, alpha = 0.8) +
-    geom_line(data = data2, aes(x = time, y = pop),linewidth = 0.8, alpha = 0.8) +
-    geom_line(data = data3, aes(x = time, y = pop),linewidth = 0.8, alpha = 0.8, color = "red")
+ggplot(data, aes(x = time, y = effectif, col = pop)) +
+    geom_line(linewidth = 0.8, alpha = 0.8)
 
 
 # essai pour quatre pop
 
-simulate_n_metapop( parametre = array(c( c(-0.2, 2.1, 1.2, -0.8), c(1000, 800, 250, 300), c(30, 25, 15, 20)), dim = c(4, 3)) )
+simulate_n_metapop(parametre = array(c( c(-0.2, 2.1, 1.2, -0.8), c(1000, 800, 250, 300), c(30, 25, 15, 20)), dim = c(4, 3)) )
