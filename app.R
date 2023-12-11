@@ -77,9 +77,10 @@ ui <- fluidPage(
                              value = 3)
                ),
                
-               # Plot dynamic for isolated population 
+               # Plot dynamic for connected population 
                mainPanel(
                   uiOutput("sliders"),
+                  checkboxInput("show_K", "Show carrying capacity", value = TRUE),
                  plotOutput("plotWithMigration")
                )
       )
@@ -88,7 +89,7 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-    # Onglet 1
+    # Onglet 2
     ## Generate the plot for isolated populations
     output$distPlot <- renderPlot({
         # get parameters input$par from ui.R
@@ -109,7 +110,7 @@ server <- function(input, output) {
       updateSliderInput(inputId = "N0", value = 10)
     })
     
-    # Onglet 2
+    # Onglet 3
     ## Generate the plot for connected populations
     output$plotWithMigration <- renderPlot({
       # get parameters input$par from ui.R
@@ -122,7 +123,8 @@ server <- function(input, output) {
       initial_size <- initial_size[1:nb_of_population]
       
       # plot the dynamic for isolated populations
-      plot_connected_pop(parametre = list(r=growth_rate, K=carrying_cap, N0=initial_size))
+      plot_connected_pop(parametre = list(r=growth_rate, K=carrying_cap, N0=initial_size), 
+                         input$show_K)
     })
     
     ## Adjust the number of slider to the number of pop

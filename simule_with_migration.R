@@ -5,7 +5,7 @@ library(ggthemes)
 # Introducing some stochasticity in the dynamic
 # sigma_p = 0.1 : the variability associated with the reproduction process
 
-simulate_n_metapop <- function(parametre, sigma_p = 0.05) 
+simulate_n_metapop <- function(parametre, sigma_p = 0.1) 
 { 
   # faudra rendre de nouveau les parametres changeable mais quand ce sera pour n pop
   
@@ -24,10 +24,11 @@ simulate_n_metapop <- function(parametre, sigma_p = 0.05)
   
   em = array(0, dim = c(temps, nb_pop))
   Nm[1,] = N0
-  N[1,] = rlnorm(length(N0), log(Nm[1,]), sigma_p)
+  N[1,] = N0 # rlnorm(length(N0), log(Nm[1,]), sigma_p)
 
   # boucle du temps           
   for (t in 1:(temps - 1)) {
+    
     Nt = N[t,]
     # REPRODUCTION
     Nm[t + 1,] = reproduction(Nt, r, K)  # reproduction
@@ -63,7 +64,9 @@ reproduction = function(Nt, r, K){
   # REPRODUCTION
   nm1 = Nt + r * Nt * (1 - Nt / K)  # reproduction
   nm2 = pmax(nm1  , 0.001 * K) # security line
-  return(nm2)
+  # Introduce a constraint to prevent N from becoming >> K
+  nm3 = ifelse(Nt > K*(1 + abs(r))/abs(r), K, nm2)
+  return(nm3)
 }
 
 add_stochasticity = function(Nm_tplus1, sigma_p){
@@ -83,7 +86,7 @@ calc_nb_immigrant = function(nb_emigrant){
   return(nb_immigrant)
 }
 
-plot_connected_pop = function(parametre){
+plot_connected_pop = function(parametre, show_K=FALSE){
   df_simu = simulate_n_metapop(parametre) %>% 
     select(time,starts_with("Population")) %>% 
     pivot_longer(-time, values_to = "N", names_to = "pop")
@@ -101,15 +104,20 @@ plot_connected_pop = function(parametre){
     theme(axis.title = element_text()) +
     scale_color_brewer(palette = "Set1") +
     ylim(0, 1.3*max(K))
+  
+  if (show_K){ plot = plot +
+      geom_hline(yintercept = K, 
+                 linetype = "dashed", color = "black")
+      }
   return(plot)
 }
 
-# plot_connected_pop(parametre)
-# 
-# parametre = list(r = c(2, -1.6), K=c(100, 100), N0=c(10, 10))
-# 
+# plot_connected_pop(parametre, show_K=FALSE)
+# # # 
+# parametre = list(r = c(2, -1.6), K=c(100, 10), N0=c(50, 50))
+# # # 
 # sim2 = simulate_n_metapop(parametre)
-# 
+# # # 
 # sim2$effectif_pop1 #effectif pop 1
 # 
 # 
@@ -128,3 +136,7 @@ plot_connected_pop = function(parametre){
 #                  N0=c(30, 25, 15, 20))
 # 
 # simulate_n_metapop2(parametre = parametre)
+
+
+
+
