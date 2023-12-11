@@ -44,7 +44,7 @@ ui <- fluidPage(
                         value = 5),
             sliderInput("r",
                         "Growth rate:",
-                        min = 0.2,
+                        min = -2,
                         max = 2,
                         value = 1.2),
             sliderInput("K",
@@ -114,9 +114,12 @@ server <- function(input, output) {
     output$plotWithMigration <- renderPlot({
       # get parameters input$par from ui.R
       nb_of_population <- input$nb_pop_connected
-      growth_rate    <- c(input$r1, input$r2, input$r3, input$r4, input$r5)
+      growth_rate <- c(input$r1, input$r2, input$r3, input$r4, input$r5)
+      growth_rate <- growth_rate[1:nb_of_population]
       carrying_cap <- c(input$K1, input$K2, input$K3, input$K4, input$K5)
+      carrying_cap <- carrying_cap[1:nb_of_population]
       initial_size <- c(input$N01, input$N02, input$N03, input$N04, input$N05)
+      initial_size <- initial_size[1:nb_of_population]
       
       # plot the dynamic for isolated populations
       plot_connected_pop(parametre = list(r=growth_rate, K=carrying_cap, N0=initial_size))
@@ -126,15 +129,18 @@ server <- function(input, output) {
     observeEvent(input$nb_pop_connected, {
       output$sliders = renderUI({
         tagList(
+          # Sliders for r
           lapply(1:input$nb_pop_connected, function(x) {
             column(
               width = 4,
               sliderInput(paste0("r", x), paste("Growth rate", x),
-                          min = 0.2,
+                          min = -2,
                           max = 2,
-                          value = 1.2)
+                          value = 0,
+                          step = 0.1)
             )
           }),
+          # Sliders for K
           lapply(1:input$nb_pop_connected, function(x) {
             column(
               width = 4, 
@@ -144,6 +150,7 @@ server <- function(input, output) {
                           value = 100)
             )
           }),
+          # Sliders for N0
           lapply(1:input$nb_pop_connected, function(x) {
             column(
               width = 4, 

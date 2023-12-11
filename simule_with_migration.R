@@ -2,9 +2,10 @@
 library(tidyverse)
 library(ggthemes)
 
-parametre = list(r = c(1, 2.1), K=c(1000, 800), N0=c(300, 10))
+# Introducing some stochasticity in the dynamic
+# sigma_p = 0.1 : the variability associated with the reproduction process
 
-simulate_n_metapop <- function(parametre) 
+simulate_n_metapop <- function(parametre, sigma_p = 0.05) 
 { 
   # faudra rendre de nouveau les parametres changeable mais quand ce sera pour n pop
   
@@ -16,10 +17,7 @@ simulate_n_metapop <- function(parametre)
   r = parametre[[1]] 
   K = parametre[[2]]
   N0 = parametre[[3]]
-  
-  # Introducing some stochasticity in the dynamic
-  sigma_p = 0.1 # the variability associated with the reproduction process
-  
+
   # INITIALISATION
   N <- array(0, dim = c(temps, nb_pop))
   Nm <- array(0, dim = c(temps, nb_pop))
@@ -64,8 +62,8 @@ simulate_n_metapop <- function(parametre)
 reproduction = function(Nt, r, K){
   # REPRODUCTION
   nm1 = Nt + r * Nt * (1 - Nt / K)  # reproduction
-  #nm2 = max(nm1  , 0.001 * K) # security line
-  return(nm1)
+  nm2 = pmax(nm1  , 0.001 * K) # security line
+  return(nm2)
 }
 
 add_stochasticity = function(Nm_tplus1, sigma_p){
@@ -108,7 +106,9 @@ plot_connected_pop = function(parametre){
 
 # plot_connected_pop(parametre)
 # 
-# sim2 = simulate_n_metapop2(parametre)
+# parametre = list(r = c(2, -1.6), K=c(100, 100), N0=c(10, 10))
+# 
+# sim2 = simulate_n_metapop(parametre)
 # 
 # sim2$effectif_pop1 #effectif pop 1
 # 
