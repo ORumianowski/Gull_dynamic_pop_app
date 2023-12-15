@@ -2,39 +2,32 @@
 library(tidyverse)
 library(ggthemes)
 
-# Introducing some stochasticity in the dynamic
-# sigma_p = 0.1 : the variability associated with the reproduction process
-
-simulate_n_metapop <- function(parametre, sigma_p = 0.1) 
+# 
+# sigma_p : the variability associated with the reproduction process to introduce
+# stochasticity in the dynamic
+# temps : nb de pas de temps (en annees)
+simulate_n_metapop <- function(parametre, sigma_p = 0.1, temps = 30) 
 { 
-  # faudra rendre de nouveau les parametres changeable mais quand ce sera pour n pop
-  
   # CONDITIONS DE SIMULATION
-  temps = 30 # nb de pas de temps (en annees)
-  
   nb_pop = length(parametre$r)
-  
   r = parametre[[1]] 
   K = parametre[[2]]
   N0 = parametre[[3]]
 
   # INITIALISATION
   N <- array(0, dim = c(temps, nb_pop))
-  Nm <- array(0, dim = c(temps, nb_pop))
-  
   em = array(0, dim = c(temps, nb_pop))
-  Nm[1,] = N0
-  N[1,] = N0 # rlnorm(length(N0), log(Nm[1,]), sigma_p)
+  N[1,] = N0
 
   # boucle du temps           
   for (t in 1:(temps - 1)) {
     
     Nt = N[t,]
     # REPRODUCTION
-    Nm[t + 1,] = reproduction(Nt, r, K)  # reproduction
+    N_reprod = reproduction(Nt, r, K)  # reproduction
     
     # STOCHASTICITY
-    N_tplus1 = add_stochasticity(Nm[t + 1,], sigma_p)
+    N_tplus1 = add_stochasticity(N_reprod, sigma_p)
     
     # EMIGRATION
     nb_emigrant = calc_nb_emigrant(N_tplus1,K) 
@@ -58,8 +51,6 @@ simulate_n_metapop <- function(parametre, sigma_p = 0.1)
   return(df_results)
 }
 
-
-
 reproduction = function(Nt, r, K){
   # REPRODUCTION
   nm1 = Nt + r * Nt * (1 - Nt / K)  # reproduction
@@ -70,7 +61,7 @@ reproduction = function(Nt, r, K){
 }
 
 add_stochasticity = function(Nm_tplus1, sigma_p){
-  return(rlnorm(length(Nm_tplus1), log(Nm_tplus1), sigma_p) )
+  return(rlnorm(length(Nm_tplus1), log(Nm_tplus1), sigma_p))
 }
 
 calc_nb_emigrant = function(N_tplus1,K){
@@ -113,9 +104,9 @@ plot_connected_pop = function(parametre, show_K=FALSE){
 }
 
 # plot_connected_pop(parametre, show_K=FALSE)
-# # # 
-# parametre = list(r = c(2, -1.6), K=c(100, 10), N0=c(50, 50))
-# # # 
+# # # # 
+# parametre = list(r = c(2, -1.6), K=c(100, 100), N0=c(0, 0))
+# # # # 
 # sim2 = simulate_n_metapop(parametre)
 # # # 
 # sim2$effectif_pop1 #effectif pop 1
