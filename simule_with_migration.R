@@ -1,6 +1,7 @@
 
 library(tidyverse)
 library(ggthemes)
+library('visNetwork') 
 
 # 
 # sigma_p : the variability associated with the reproduction process to introduce
@@ -131,6 +132,82 @@ plot_connected_pop = function(parametre, show_K=FALSE){
 #                  N0=c(30, 25, 15, 20))
 # 
 # simulate_n_metapop2(parametre = parametre)
+
+
+
+res = simulate_n_metapop(parametre = list(r = c(1.2, 1.1, 3, 1,1),
+                                          K = c(100, 12, 5, 10,54),
+                                          N0 = c(15, 25, 5, 54,45)))
+
+# pbm avec res
+
+date = 5
+
+
+emigrant_flow = function(res, date) {
+  
+  nb_pop = (ncol(res) - 1) / 2
+  
+  # recuperation des tailles de populations
+  pop_size = res[date, 2:(nb_pop+1)]
+  
+  # calculs des flux
+  res = res[date, (nb_pop + 2):(2 * nb_pop + 1)]
+  id = 1:nb_pop
+  tab.em  = data.frame(from = NA, to = NA, width = NA)
+  
+  for (n in 1:nb_pop) {
+    
+    em_i = res[, n] / (nb_pop - 1)
+    
+    tab.em_i  = data.frame(from = rep(n, (nb_pop - 1)),
+                       to = id[id != n],
+                       width = rep(em_i, (nb_pop - 1)))
+    
+    tab.em = rbind(tab.em, tab.em_i)
+    
+  }
+  
+  flow = tab.em[2:nrow(tab.em), ]
+  
+  return(list(flow, pop_size))
+}
+
+try_em = emigrant_flow(res, date)
+
+# le res est anormal, je mets des valeurs possibles
+try_em[[1]]$width = 1:(5*4)
+try_em[[2]] = c(10,5,2,7,1)
+
+
+
+plot_network = function(tab){
+  
+  pop_size = tab[[2]]
+  nb_pop = length(pop_size)
+  
+  pop_size = 0.1 * pop_size / mean(pop_size) # necessaire pour une bonne echelle de taille
+  
+  edges = tab[[1]]
+  
+  edges$width = 2 * edges$width / mean(edges$width)
+  
+  nodes <- data.frame(id = 1:nb_pop,
+                      value = 1:nb_pop,
+                      label = paste("", 1:nb_pop))
+  
+  visNetwork(nodes, edges) %>% 
+    visEdges(arrows = 'from', scaling = list(min = 0.5, max = 1.5))%>%
+    visNodes(scaling = list(min = 8, max = 20), 
+             color = list(background = "blue", 
+                          border = "lightblue",
+                          highlight = "purple"))%>%
+    visLayout(randomSeed = 12)
+}
+
+
+plot_network(tab = try_em)
+
 
 
 
