@@ -13,6 +13,8 @@ simulate_n_metapop <- function(parametre, sigma_p = 0.1, temps = 30)
   r = parametre[[1]] 
   K = parametre[[2]]
   N0 = parametre[[3]]
+  R0 = exp(r)
+  M = K / (R0 - 1)
 
   # INITIALISATION
   N <- array(0, dim = c(temps, nb_pop))
@@ -21,10 +23,10 @@ simulate_n_metapop <- function(parametre, sigma_p = 0.1, temps = 30)
 
   # boucle du temps           
   for (t in 1:(temps - 1)) {
-    
+    t = 16
     Nt = N[t,]
     # REPRODUCTION
-    N_reprod = reproduction(Nt, r, K)  # reproduction
+    N_reprod = reproduction(Nt, R0, M)  # reproduction
     
     # STOCHASTICITY
     N_tplus1 = add_stochasticity(N_reprod, sigma_p)
@@ -51,13 +53,15 @@ simulate_n_metapop <- function(parametre, sigma_p = 0.1, temps = 30)
   return(df_results)
 }
 
-reproduction = function(Nt, r, K){
+reproduction = function(Nt, R0, M){
+  Nmt = R0 * Nt / (1+Nt/M)
+  Nmt = ifelse(Nmt < 0, K, Nmt)
   # REPRODUCTION
-  nm1 = Nt + r * Nt * (1 - Nt / K)  # reproduction
-  nm2 = pmax(nm1  , 0.001 * K) # security line
-  # Introduce a constraint to prevent N from becoming >> K
-  nm3 = ifelse(Nt > K*(1 + abs(r))/abs(r), K, nm2)
-  return(nm3)
+  # nm1 = Nt + r * Nt * (1 - Nt / K)  # reproduction
+  # nm2 = pmax(nm1  , 0.001 * K) # security line
+  # # Introduce a constraint to prevent N from becoming >> K
+  # nm3 = ifelse(Nt > K*(1 + abs(r))/abs(r), K, nm2)
+  return(Nmt)
 }
 
 add_stochasticity = function(Nm_tplus1, sigma_p){
@@ -103,9 +107,9 @@ plot_connected_pop = function(parametre, show_K=FALSE){
   return(plot)
 }
 
-# plot_connected_pop(parametre, show_K=FALSE)
-# # # # 
-# parametre = list(r = c(2, -1.6), K=c(100, 100), N0=c(0, 0))
+# plot_connected_pop(parametre, show_K=TRUE)
+# # # # # 
+# parametre = list(r = c(2, -0.9), K=c(281, 37), N0=c(10, 10))
 # # # # 
 # sim2 = simulate_n_metapop(parametre)
 # # # 
