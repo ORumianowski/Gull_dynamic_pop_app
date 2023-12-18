@@ -1,12 +1,12 @@
 
-### What is a metapopulation ?        		   ![](metapopulation.png){ width=8% } 
+### What is a metapopulation ?        		   ![](images/metapopulation.png){ width=8% } 
 
 A metapopulation consists of a group of spatially separated populations of the same species which interact at some level. The application of metapopulation models is relevant to the study of population dynamics in fragmented environments or when breeders aggregate at sites and form colonies. This application aims to provide an interface that applies and illustrates a discrete metapopulation model whose characteristics can be chosen by the user.
 The size of each population is determined by three processes: births, deaths and migration :
 
 >   N<sub>n+1</sub> = N<sub>n</sub>  + Birth - Death + Immigration - Emigration 
 
-### Modelling a metacolony of Black-headed Gull   ![](silouette.png){ width=10% } 
+### Modelling a metacolony of Black-headed Gull   ![](images/silouette.png){ width=10% } 
 
 The model used in this application is placed in the context of modeling a Black-headed Gull (*Chroicocephalus ridibundus*) metacolony. The adults of this gregarious species come together in spring to breed in a colony. 
 
@@ -34,7 +34,7 @@ After the breeding season, the adults have the choice of staying in the colony o
 #### References
 Grumbach, C., Reurik, F.N., Segura, J. et al. The effect of dispersal on asymptotic total population size in discrete- and continuous-time two-patch models. J. Math. Biol. 87, 60 (2023)  [https://link.springer.com/article/10.1007/s00285-023-01984-8)
 
-![](mouette_rieuse.png){ width=30% }
+![](images/mouette_rieuse.png){ width=30% }
 
 
 
