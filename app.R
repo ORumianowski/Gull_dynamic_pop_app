@@ -12,6 +12,7 @@ library(shinythemes)
 library(shinyWidgets)
 library(ggthemes)
 library(tidyverse)
+library(knitr)
 
 source(file = "simule_isolated_pop.R")
 source(file = "simule_with_migration.R")
@@ -22,13 +23,14 @@ source(file = "simule_with_migration.R")
 ui <- fluidPage(
     theme = shinytheme("cosmo"),
     chooseSliderSkin("Flat"),
+    
 
     navbarPage("Gull Population Dynamic",
       ## Onglet 1 : About the model
       tabPanel("About", 
-                titlePanel("About"), 
-                div(includeMarkdown("about.md"), 
-                align="justify")
+               # Render the Markdown file with MathJax
+               withMathJax(),
+               uiOutput("markdownOutput")
                ),
       
       ## Onglet 2 : graphic for isolated populations
@@ -89,6 +91,11 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  # Onglet 1 Markdown
+  output$markdownOutput <- renderUI(
+  withMathJax({
+    includeMarkdown("about.md")
+  }))
     # Onglet 2
     ## Generate the plot for isolated populations
     output$distPlot <- renderPlot({
