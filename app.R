@@ -103,8 +103,13 @@ ui <- fluidPage(
                    visNetworkOutput("networkPlot"),
                    sliderInput("simulation_time", "Time", min = 1, max = 30, value = 1, step = 1),
                )
-      )
-)))
+      )),
+      ## Onglet 4 : About the project
+      tabPanel("The project", 
+               uiOutput("markdowTheProject")
+      ),
+      
+))
 
 
 # Define server logic required to draw a histogram
@@ -203,6 +208,11 @@ server <- function(input, output) {
         )
       })
     })
+    
+    # Onglet 4 Markdown 2
+    output$markdowTheProject <- renderUI(
+        includeMarkdown("about_the_project.md")
+      )
     
    
 }
