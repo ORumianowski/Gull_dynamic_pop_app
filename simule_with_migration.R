@@ -7,7 +7,7 @@ library('visNetwork')
 # sigma_p : the variability associated with the reproduction process to introduce
 # stochasticity in the dynamic
 # temps : nb de pas de temps (en annees)
-simulate_n_metapop <- function(parametre, sigma_p = 0.1, temps = 30) 
+simulate_n_metapop <- function(parametre, sigma_p = 0.05, temps = 30) 
 { 
   # CONDITIONS DE SIMULATION
   nb_pop = length(parametre$r)
@@ -24,23 +24,22 @@ simulate_n_metapop <- function(parametre, sigma_p = 0.1, temps = 30)
 
   # boucle du temps           
   for (t in 1:(temps - 1)) {
-    t = 16
     Nt = N[t,]
     # REPRODUCTION
     N_reprod = reproduction(Nt, R0, M)  # reproduction
-    
+
     # STOCHASTICITY
     N_tplus1 = add_stochasticity(N_reprod, sigma_p)
-    
+
     # EMIGRATION
-    nb_emigrant = calc_nb_emigrant(N_tplus1,K) 
+    nb_emigrant = calc_nb_emigrant(N_tplus1, K)
 
     # IMMIGRATION
     nb_immigrant = calc_nb_immigrant(nb_emigrant)
-    
+
     # Total ; N - emigrant + immigre
     N[t + 1,] = N_tplus1 -  nb_emigrant + nb_immigrant
-    em[t,] = nb_emigrant
+    em[t+1,] = nb_emigrant
   }
   
     
@@ -57,24 +56,31 @@ simulate_n_metapop <- function(parametre, sigma_p = 0.1, temps = 30)
 reproduction = function(Nt, R0, M){
   Nmt = R0 * Nt / (1+Nt/M)
   Nmt = ifelse(Nmt < 0, K, Nmt)
-  # REPRODUCTION
-  # nm1 = Nt + r * Nt * (1 - Nt / K)  # reproduction
-  # nm2 = pmax(nm1  , 0.001 * K) # security line
-  # # Introduce a constraint to prevent N from becoming >> K
-  # nm3 = ifelse(Nt > K*(1 + abs(r))/abs(r), K, nm2)
   return(Nmt)
 }
+
+# Ne fonctionne pas bien si r < 0
+# R0 = exp(-0.8)
+# M = 79 / (R0 - 1)
+# reproduction(Nt=138,R0, M )
 
 add_stochasticity = function(Nm_tplus1, sigma_p){
   return(rlnorm(length(Nm_tplus1), log(Nm_tplus1), sigma_p))
 }
 
-calc_nb_emigrant = function(N_tplus1,K){
+calc_nb_emigrant = function(N, K){
   # calcul du nombre d'emigrant
-  nb_emigrant =  pmax((N_tplus1 -  K)  , 0)  
+  surplus = N - K
+  constitutive_migration = 0.05 * N
+  nb_emigrant = ifelse(surplus>0, surplus+constitutive_migration, 
+                       constitutive_migration)
   return(nb_emigrant)
 }
 
+# K = 1000
+# N = 1:1100
+# E = calc_nb_emigrant(N, K)
+# plot(N, E)
 
 calc_nb_immigrant = function(nb_emigrant){
   #chaque pop se partage equitablement les emigrants
@@ -98,8 +104,9 @@ plot_connected_pop = function(parametre, show_K=FALSE){
          color = "Population") +
     theme_hc() +
     theme(axis.title = element_text()) +
-    scale_color_brewer(palette = "Set1") +
-    ylim(0, 1.3*max(K))
+    scale_color_brewer(palette = "Set1") 
+  # +
+  #   ylim(0, 1.3*max(K))
   
   if (show_K){ plot = plot +
       geom_hline(yintercept = K, 
@@ -134,16 +141,6 @@ plot_connected_pop = function(parametre, show_K=FALSE){
 # simulate_n_metapop2(parametre = parametre)
 
 
-
-res = simulate_n_metapop(parametre = list(r = c(1.2, 1.1, 3, 1,1),
-                                          K = c(100, 12, 5, 10,54),
-                                          N0 = c(15, 25, 5, 54,45)))
-
-# pbm avec res
-
-date = 5
-
-
 emigrant_flow = function(res, date) {
   
   nb_pop = (ncol(res) - 1) / 2
@@ -173,27 +170,21 @@ emigrant_flow = function(res, date) {
   return(list(flow, pop_size))
 }
 
-try_em = emigrant_flow(res, date)
 
-# le res est anormal, je mets des valeurs possibles
-try_em[[1]]$width = 1:(5*4)
-try_em[[2]] = c(10,5,2,7,1)
-
-
-
-plot_network = function(tab){
+plot_network = function(res, date){
+  tab = emigrant_flow(res, date)
   
   pop_size = tab[[2]]
   nb_pop = length(pop_size)
   
-  pop_size = 0.1 * pop_size / mean(pop_size) # necessaire pour une bonne echelle de taille
+  pop_size = 0.1 * pop_size / mean(unlist(pop_size)) # necessaire pour une bonne echelle de taille
   
   edges = tab[[1]]
   
   edges$width = 2 * edges$width / mean(edges$width)
   
   nodes <- data.frame(id = 1:nb_pop,
-                      value = 1:nb_pop,
+                      value = unlist(tab[[2]]),
                       label = paste("", 1:nb_pop))
   
   visNetwork(nodes, edges) %>% 
@@ -206,9 +197,19 @@ plot_network = function(tab){
 }
 
 
-plot_network(tab = try_em)
+
+# parametre = list(r = c(1.2, 1.1, 3, 1,1),
+#                  K = c(100, 12, 5, 10,54),
+#                  N0 = c(15, 25, 5, 54,45))
+# res = simulate_n_metapop(parametre)
+# plot_network(res, date = 1)
+# plot_network(res, date = 10)
+# plot_network(res, date = 20)
+# plot_network(res, date = 30)
 
 
-
-
-
+# parametre = list(r = c(3, -0.8),
+#                  K = c(1000, 79),
+#                  N0 = rep(68, 2))
+# df = simulate_n_metapop(parametre)
+# plot_connected_pop(parametre, show_K=TRUE)
