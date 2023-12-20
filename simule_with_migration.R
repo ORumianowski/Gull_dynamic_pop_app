@@ -1,7 +1,9 @@
 
-library(tidyverse)
-library(ggthemes)
-library('visNetwork') 
+# library(tidyverse)
+# library(ggthemes)
+# library(visNetwork)
+# library(plotly)
+# library(extrafont)
 
 # 
 # sigma_p : the variability associated with the reproduction process to introduce
@@ -38,7 +40,7 @@ simulate_n_metapop <- function(parametre, sigma_p = 0.05, temps = 30)
     nb_immigrant = calc_nb_immigrant(nb_emigrant)
 
     # Total ; N - emigrant + immigre
-    N[t + 1,] = N_tplus1 -  nb_emigrant + nb_immigrant
+    N[t + 1,] = round(N_tplus1 -  nb_emigrant + nb_immigrant)
     em[t+1,] = nb_emigrant
   }
   
@@ -48,7 +50,7 @@ simulate_n_metapop <- function(parametre, sigma_p = 0.05, temps = 30)
                  emigration = em) %>% as.data.frame()
   
   colnames(df_results) = c("time", 
-                           paste("Population", 1:nb_pop),
+                           1:nb_pop,
                            paste0("emigration_pop", 1:nb_pop))
   return(df_results)
 }
@@ -89,40 +91,74 @@ calc_nb_immigrant = function(nb_emigrant){
 }
 
 plot_connected_pop = function(parametre, show_K=FALSE){
-  df_simu = simulate_n_metapop(parametre) %>% 
-    select(time,starts_with("Population")) %>% 
-    pivot_longer(-time, values_to = "N", names_to = "pop")
-  
+  t_max = 30
+  r = parametre[[1]]
   K = parametre[[2]]
   nb_of_pop = length(K)
-
-  plot = ggplot(data = df_simu, aes(x = time, y = N, color=pop)) +
+  
+  df_simu = simulate_n_metapop(parametre) %>% 
+    select(time,as.character(1:nb_of_pop)) %>% 
+    pivot_longer(-time, values_to = "Size", names_to = "Population") %>% 
+    mutate(r = rep(r,t_max), K = rep(K, t_max))
+  
+  plot = ggplot(data = df_simu, 
+                aes(x = time, y = Size, color=Population,
+                    text = paste0("r: ", r,
+                                  "\nK: ", K))) +
     geom_line(linewidth = 0.8, alpha = 0.8) +
     labs(title = paste("Population dynamic for", nb_of_pop ,"connected populations"),
          x = "Time",
          y = "Population size",
          color = "Population") +
     theme_hc() +
-    theme(axis.title = element_text()) +
-    scale_color_brewer(palette = "Set1") 
-  # +
-  #   ylim(0, 1.3*max(K))
+    theme(axis.title = element_text(),
+          text = element_text(family = "Rubik"),
+          legend.position = "bottom") +
+    scale_color_brewer(palette = "Set1") +
+    ylim(0, 1.3*max(K))
   
   if (show_K){ plot = plot +
       geom_hline(yintercept = K, 
                  linetype = "dashed", color = "black")
-      }
-  return(plot)
+  }
+  
+  # Interactive graph
+  font = list(family = "Rubik", size = 12, color = "white")
+  label = list(bordercolor = "transparent", font = font)
+  plot_interactif = ggplotly(plot) %>% 
+    style(hoverlabel = label) %>% 
+    layout(font = font, legend = list(orientation = "h",x = 0.2, y = -0.3)) %>% 
+    config(
+      modeBarButtonsToRemove = list(
+        "zoom2d",
+        "pan2d",
+        "zoomIn2d",
+        "zoomOut2d",
+        "autoScale2d",
+        "resetScale2d",
+        "hoverClosestCartesian",
+        "hoverCompareCartesian",
+        "sendDataToCloud",
+        "toggleHover",
+        "resetViews",
+        "toggleSpikelines",
+        "resetViewMapbox"
+      ),
+      displaylogo = FALSE
+    )
+  #config(displayModeBar = FALSE)
+  
+  return(plot_interactif)
 }
 
-# plot_connected_pop(parametre, show_K=TRUE)
-# # # # # 
-# parametre = list(r = c(2, -0.9), K=c(281, 37), N0=c(10, 10))
-# # # # 
-# sim2 = simulate_n_metapop(parametre)
-# # # 
-# sim2$effectif_pop1 #effectif pop 1
+# parametre = list(r = c(2, 0), K=c(281, 37), N0=c(10, 10))
 # 
+# plot_connected_pop(parametre, show_K=TRUE)
+
+# sim2 = simulate_n_metapop(parametre)
+# # #
+# sim2$effectif_pop1 #effectif pop 1
+# # 
 # 
 # data2 = sim2 %>% 
 #   select(time,starts_with("effectif")) %>% 
