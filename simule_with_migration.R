@@ -187,18 +187,27 @@ plot_network = function(res, date){
                       value = unlist(tab[[2]]),
                       label = paste("", 1:nb_pop))
   
-  visNetwork(nodes, edges) %>% 
+  lnodes <- data.frame(label = c("Colony"),
+                       shape = c( "circle"), color = c("blue"))
+  
+  ledges <- data.frame(color = c("lightblue"),
+                       label = c("flow"), arrows =c("from"))
+  
+  visNetwork(nodes, edges, 
+             main = list(text = "Network representation of the metacolony",
+                            style = "font-family:Comic Sans MS;color:#000000;font-size:15px;text-align:center;")) %>% 
     visEdges(arrows = 'from', scaling = list(min = 0.5, max = 1.5))%>%
     visNodes(scaling = list(min = 8, max = 20), 
              color = list(background = "blue", 
                           border = "lightblue",
                           highlight = "purple"))%>%
-    visLayout(randomSeed = 12)
+    visLayout(randomSeed = 12)%>%
+    visLegend(addEdges = ledges, addNodes = lnodes, useGroups = FALSE)
 }
 
 
 
-# parametre = list(r = c(1.2, 1.1, 3, 1,1),
+#parametre = list(r = c(1.2, 1.1, 3, 1,1),
 #                  K = c(100, 12, 5, 10,54),
 #                  N0 = c(15, 25, 5, 54,45))
 # res = simulate_n_metapop(parametre)
