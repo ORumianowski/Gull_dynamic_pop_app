@@ -41,14 +41,15 @@ After the breeding season, the adults have the choice of staying in the colony o
 The number of emigrants $E_i(t)$ from colony i at time t is expressed as: 
 
 $$
-E_i(t) = max(0, N_i(t)-K_i)
+E_i(t) = m_i \times N_i(t) + max(0, N_i(t)-K_i)
 $$
 
-With $N_i(t)$ the number of birds at the colony i at t and $K_i$ its maximal carrying capacity. Then emigrants are equally shared by the other colony j, thus the number of immigrants is: 
+With $N_i(t)$ the number of birds at the colony i at t, $K_i$ its maximal carrying capacity and $m_i$ its migration rate. Migration rate is set to 0.1 for all the population. Then emigrants are equally shared by the other colony j, thus the number of immigrants is: 
 
 $$
 I_i(t) = \frac{((\sum_j E_j(t)) - E_i(t))}{N-1}
 $$
+
 
 #### References
 1. Grumbach, C., Reurik, F.N., Segura, J. et al. [The effect of dispersal on asymptotic total population size in discrete- and continuous-time two-patch models.](https://link.springer.com/article/10.1007/s00285-023-01984-8), J. Math. Biol. 87, 60 (2023).

@@ -82,7 +82,7 @@ calc_nb_emigrant = function(N, K){
 # K = 1000
 # N = 1:1100
 # E = calc_nb_emigrant(N, K)
-# plot(N, E)
+# plot(N, E, type = 'l')
 
 calc_nb_immigrant = function(nb_emigrant){
   #chaque pop se partage equitablement les emigrants
@@ -92,8 +92,8 @@ calc_nb_immigrant = function(nb_emigrant){
 
 plot_connected_pop = function(parametre, show_K=FALSE){
   t_max = 30
-  r = parametre[[1]]
-  K = parametre[[2]]
+  r = parametre[[1]] 
+  K = parametre[[2]] 
   nb_of_pop = length(K)
   
   df_simu = simulate_n_metapop(parametre) %>% 
@@ -207,20 +207,18 @@ emigrant_flow = function(res, date) {
 }
 
 
-plot_network = function(res, date){
+plot_network = function(res, date, K){
   tab = emigrant_flow(res, date)
   
-  pop_size = tab[[2]]
+  pop_size = unlist(tab[[2]])
   nb_pop = length(pop_size)
-  
-  pop_size = 0.1 * pop_size / mean(unlist(pop_size)) # necessaire pour une bonne echelle de taille
-  
+
   edges = tab[[1]]
   
   edges$width = 2 * edges$width / mean(edges$width)
   
   nodes <- data.frame(id = 1:nb_pop,
-                      value = unlist(tab[[2]]),
+                      value = pop_size,
                       label = paste("", 1:nb_pop))
   
   lnodes <- data.frame(label = c("Colony"),
@@ -229,11 +227,16 @@ plot_network = function(res, date){
   ledges <- data.frame(color = c("lightblue"),
                        label = c("flow"), arrows =c("from"))
   
+  #max_size = 8*(mean(pop_size)/max(K)+1)+(max(pop_size)-min(pop_size)) /max(K)
+  max_size = 8*(mean(pop_size)/max(K)+1)+(max(pop_size)-min(pop_size)) /20
+  
+  min_size = 8*(mean(pop_size)/max(K)+1)
+ 
   visNetwork(nodes, edges, 
              main = list(text = "Network representation of the metacolony",
                             style = "font-family:Comic Sans MS;color:#000000;font-size:15px;text-align:center;")) %>% 
     visEdges(arrows = 'from', scaling = list(min = 0.5, max = 1.5))%>%
-    visNodes(scaling = list(min = 8, max = 20), 
+    visNodes(scaling = list(min = min_size, max = max_size), 
              color = list(background = "blue", 
                           border = "lightblue",
                           highlight = "purple"))%>%
@@ -243,14 +246,16 @@ plot_network = function(res, date){
 
 
 
-#parametre = list(r = c(1.2, 1.1, 3, 1,1),
-#                  K = c(100, 12, 5, 10,54),
-#                  N0 = c(15, 25, 5, 54,45))
-# res = simulate_n_metapop(parametre)
-# plot_network(res, date = 1)
-# plot_network(res, date = 10)
-# plot_network(res, date = 20)
-# plot_network(res, date = 30)
+parametre = list(r = c(1, 1, 1),
+                 K = c(10, 100, 1000),
+                 N0 = c(10, 10, 10))
+K = c(10, 100, 1000)
+res = simulate_n_metapop(parametre)
+plot_network(res, date = 1, K)
+plot_network(res, date = 10, K)
+plot_network(res, date = 11, K)
+plot_network(res, date = 20, K)
+plot_network(res, date = 30, K)
 
 
 # parametre = list(r = c(3, -0.8),

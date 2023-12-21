@@ -13,7 +13,7 @@ simulate_1_pop <- function(parametre) {
   N0 = parametre[3]
   
   # what is tau_p
-  tau_p = 0.1
+  tau_p = 0.05
   
   # INITIALISATION
   N <- array(0, dim = c(temps))
@@ -75,7 +75,24 @@ plot_isolated_pop = function(parametre = c(1.2, 100,10), nb_of_pop=5, t_max = 30
   plot_interactif = ggplotly(plot) %>% 
     style(hoverlabel = label) %>% 
     layout(font = font, legend = list(orientation = "h",x = 0.1, y = -0.3)) %>% 
-    config(displayModeBar = FALSE)
+    config(
+      modeBarButtonsToRemove = list(
+        "zoom2d",
+        "pan2d",
+        "zoomIn2d",
+        "zoomOut2d",
+        "autoScale2d",
+        "resetScale2d",
+        "hoverClosestCartesian",
+        "hoverCompareCartesian",
+        "sendDataToCloud",
+        "toggleHover",
+        "resetViews",
+        "toggleSpikelines",
+        "resetViewMapbox"
+      ),
+      displaylogo = FALSE
+    )
   return(plot_interactif)
 }
 plot_isolated_pop()
