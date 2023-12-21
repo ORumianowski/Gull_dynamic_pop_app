@@ -1,12 +1,12 @@
 
 
-### What is a metapopulation ?        		   ![](images/metapopulation.png){ width=8% } 
+### What is a metapopulation ?        		   ![](images/metapopulation.png){ width=6% } 
 A metapopulation refers to a group of **spatially separated populations** of the same species which interact at some level. The application of metapopulation models is relevant to the study of population dynamics in **fragmented environments** or when breeders aggregate at sites and form colonies. This application aims to provide an interface that applies and illustrates a discrete metapopulation model whose characteristics can be chosen by the user.
 The size of each population is determined by three processes: births, deaths and migration :
 
 >   N<sub>t+1</sub> = N<sub>t</sub>  + Birth - Death + Immigration - Emigration 
 
-### Modelling a metacolony of Black-headed Gull   ![](images/silouette.png){ width=10% } 
+### Modelling a metacolony of Black-headed Gull   ![](images/silouette.png){ width=8% } 
 
 The model used in this application is placed in the context of modeling a Black-headed Gull (*Chroicocephalus ridibundus*) metacolony. The adults of this gregarious species come together in spring to breed in a colony. 
 
