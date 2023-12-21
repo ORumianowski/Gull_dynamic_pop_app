@@ -10,9 +10,14 @@
 library(shiny)
 library(shinythemes)
 library(shinyWidgets)
+library(shinysky)
 library(ggthemes)
 library(tidyverse)
 library(knitr)
+library(visNetwork)
+library(plotly)
+library(extrafont)
+
 
 source(file = "simule_isolated_pop.R")
 source(file = "simule_with_migration.R")
@@ -23,7 +28,7 @@ source(file = "simule_with_migration.R")
 ui <- fluidPage(
     theme = shinytheme("cosmo"),
     chooseSliderSkin("Flat"),
-    
+    busyIndicator(text = "Calculation in progress ... ", wait = 0),
 
     navbarPage("Gull Population Dynamic",
       ## Onglet 1 : About the model
@@ -42,13 +47,14 @@ ui <- fluidPage(
             sliderInput("nb_pop",
                         "Number of populations:",
                         min = 1,
-                        max = 10,
-                        value = 5),
+                        max = 5,
+                        value = 2),
             sliderInput("r",
                         "Growth rate:",
-                        min = -2,
+                        min = 0,
                         max = 2,
-                        value = 1.2),
+                        value = 1,
+                        step = 0.1),
             sliderInput("K",
                         "Carrying capacity:",
                         min = 10,
@@ -64,7 +70,8 @@ ui <- fluidPage(
           
           # Plot dynamic for isolated population 
           mainPanel(
-            plotOutput("distPlot")
+            plotlyOutput("distPlot"),
+            downloadButton("saveButton", "Save Plot")
           )
       ),
       
@@ -74,7 +81,7 @@ ui <- fluidPage(
                sidebarPanel(
                  sliderInput("nb_pop_connected",
                              "Number of populations:",
-                             min = 1,
+                             min = 2,
                              max = 5,
                              value = 3),
                  sliderInput("N0_metapop", "Initial sizes",
@@ -96,7 +103,7 @@ ui <- fluidPage(
                   checkboxInput("show_K", "Show carrying capacity", value = TRUE),
                  conditionalPanel(
                    condition = "input.graph == 'Demographic curves'",
-                   plotOutput("demographicPlot")
+                   plotlyOutput("demographicPlot")
                  ),
                  conditionalPanel(
                    condition = "input.graph == 'Network'",
@@ -121,17 +128,20 @@ server <- function(input, output) {
   }))
     # Onglet 2
     ## Generate the plot for isolated populations
-    output$distPlot <- renderPlot({
-        # get parameters input$par from ui.R
-        growth_rate    <- input$r
-        carrying_cap <- input$K
-        nb_of_population <- input$nb_pop
-        initial_size <- input$N0
-
-        # plot the dynamic for isolated populations
-        plot_isolated_pop(parametre = c(growth_rate, carrying_cap, initial_size), nb_of_pop=nb_of_population)
-    })
+  inputPlot1 <- reactive({
+    # get parameters input$par from ui.R
+    growth_rate    <- input$r
+    carrying_cap <- input$K
+    nb_of_population <- input$nb_pop
+    initial_size <- input$N0
     
+    # plot the dynamic for isolated populations
+    plot_isolated_pop(parametre = c(growth_rate, carrying_cap, initial_size), nb_of_pop=nb_of_population)
+  })
+  
+  output$distPlot <- renderPlotly({
+    print(inputPlot1())
+  })
     ## reset button
     observeEvent(input$reset, {
       updateSliderInput(inputId = "nb_pop", value = 5)
@@ -140,9 +150,20 @@ server <- function(input, output) {
       updateSliderInput(inputId = "N0", value = 10)
     })
     
+    # Function to save the plot
+    output$saveButton <- downloadHandler(
+      filename = function() {
+        paste("plot_", Sys.Date(), ".html", sep = "")
+      },
+      content = function(file) {
+        htmlwidgets::saveWidget(as_widget(inputPlot1()), file)
+      }
+    )
+    
+    
     # Onglet 3
     ## Generate the plot for connected populations
-    output$demographicPlot <- renderPlot({
+    output$demographicPlot <- renderPlotly({
       # get parameters input$par from ui.R
       nb_of_population <- input$nb_pop_connected
       growth_rate <- c(input$r1, input$r2, input$r3, input$r4, input$r5)
