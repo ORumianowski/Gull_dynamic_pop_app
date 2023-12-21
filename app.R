@@ -17,7 +17,8 @@ library(knitr)
 library(visNetwork)
 library(plotly)
 library(extrafont)
-
+library(markdown) 
+library(htmltools)
 
 source(file = "simule_isolated_pop.R")
 source(file = "simule_with_migration.R")
@@ -134,7 +135,7 @@ server <- function(input, output) {
   # Onglet 1 Markdown
   output$markdownOutput <- renderUI(
   withMathJax({
-    includeMarkdown("about.md")
+    includeMarkdown("markdown_file/about.md")
   }))
     # Onglet 2
     ## Generate the plot for isolated populations
@@ -280,7 +281,7 @@ server <- function(input, output) {
     
     # Onglet 4 Markdown 2
     output$markdowTheProject <- renderUI(
-        includeMarkdown("about_the_project.md")
+        includeMarkdown("markdown_file/about_the_project.md")
       )
     
    
