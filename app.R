@@ -49,7 +49,7 @@ ui <- fluidPage(
                         "Number of populations:",
                         min = 1,
                         max = 5,
-                        value = 2),
+                        value = 3),
             sliderInput("r",
                         "Growth rate:",
                         min = 0,
@@ -60,12 +60,14 @@ ui <- fluidPage(
                         "Carrying capacity:",
                         min = 10,
                         max = 1000,
-                        value = 100),
+                        value = 500,
+                        step = 10),
             sliderInput("N0",
                         "Initial population size:",
                         min = 0,
                         max = 200,
-                        value = 10),
+                        value = 100,
+                        step = 10),
             actionButton("reset", "Reset")
           ),
           
@@ -155,10 +157,10 @@ server <- function(input, output) {
   })
     ## reset button
     observeEvent(input$reset, {
-      updateSliderInput(inputId = "nb_pop", value = 5)
-      updateSliderInput(inputId = "r", value = 1.2)
-      updateSliderInput(inputId = "K", value = 100)
-      updateSliderInput(inputId = "N0", value = 10)
+      updateSliderInput(inputId = "nb_pop", value = 3)
+      updateSliderInput(inputId = "r", value = 1)
+      updateSliderInput(inputId = "K", value = 500)
+      updateSliderInput(inputId = "N0", value = 100)
     })
     
     # add gull image
